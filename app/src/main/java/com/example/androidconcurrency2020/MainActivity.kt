@@ -2,10 +2,13 @@ package com.example.androidconcurrency2020
 
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.widget.ScrollView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.work.*
 import com.example.androidconcurrency2020.databinding.ActivityMainBinding
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
@@ -30,7 +33,22 @@ class MainActivity : AppCompatActivity() {
      * Run some code
      */
     private fun runCode() {
-        MyIntentService.startActionFoo(this, "Param1", "Param2")
+        //Intent service
+        startService(MyIntentService.startActionFoo(this, "Param1", "Param2"))
+
+        //Job Intent Service
+        MyJobIntentService.startJob(this, "Param1", "Param2", MyResultReceiver(Handler()))
+
+        //WorkManager
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        val workRequest = PeriodicWorkRequestBuilder<MyWorker>(60, TimeUnit.SECONDS)
+            .setConstraints(constraints)
+            .build()
+        WorkManager.getInstance(applicationContext)
+            .enqueue(workRequest)
     }
 
     /**
